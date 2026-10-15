@@ -306,7 +306,21 @@ dispatchCurrentChildViewConfiguration(PuglView* const view)
 
 - (void)dispatchExpose:(NSRect)rect
 {
-  const double scaleFactor = [[NSScreen mainScreen] backingScaleFactor];
+  // PMU LOCAL PATCH (not upstream — see mac_gl.m's own PMU LOCAL PATCH comment for the fuller
+  // cross-monitor-scale-bug investigation this is the ACTUAL final piece of). This used to read
+  // [[NSScreen mainScreen] backingScaleFactor] — the OS's key/primary screen, not necessarily the
+  // screen this plugin's own view is currently on. Every other scale lookup in this file
+  // (viewScreen(), nsRectFromPoints(), dispatchCurrentChildViewConfiguration()) already correctly
+  // uses the view's OWN current screen instead; this was the one holdout, and it's what actually
+  // computes the PUGL_EXPOSE event's reported width/height a few lines down (rect.size * this
+  // scaleFactor) — the value that drives the GL viewport/NanoVG's real paint transform for the
+  // frame. Confirmed by live diagnostics (2026-08-30): every step up to and including our own
+  // onNanoDisplay() paint callback already saw the fully-correct new scale/size after a cross-
+  // monitor drag, but THIS event's dispatched width/height stayed stuck at the OLD scale's
+  // dimensions — because mainScreen doesn't necessarily track wherever the plugin window actually
+  // moved to. Using viewScreen(puglview) instead (matching the rest of the file) fixes that
+  // mismatch at its actual source.
+  const double scaleFactor = [viewScreen(puglview) backingScaleFactor];
 
   if (reshaped) {
     if (puglview->impl->window) {

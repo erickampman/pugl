@@ -95,10 +95,9 @@ ensureHint(PuglView* const view, const PuglViewHint hint, const int value)
   [wrapper setReshaped];
 }
 
-// PMU LOCAL PATCH (not upstream — see /Users/erickampman/Dev-Audio/PolygraphModularUnified,
-// gui_dgl.cpp's uiFocus()/uiScaleFactorChanged() comments, dgl/src/WindowPrivateData.cpp's own
-// PMU LOCAL PATCH comment, and mac.m's -dispatchExpose: PMU LOCAL PATCH comment, for the full
-// investigation). Cross-monitor "canvas renders zoomed/cropped after dragging the plugin window
+// PMU LOCAL PATCH (not upstream; found in PolygraphModular, which isn't public. See DPF's
+// dgl/src/WindowPrivateData.cpp PMU LOCAL PATCH comment, in the DPF fork, and mac.m's
+// -dispatchExpose: PMU LOCAL PATCH comment, for the other two parts). Cross-monitor "canvas renders zoomed/cropped after dragging the plugin window
 // to a different-DPI display" had THREE stacked root causes across three different files, all
 // needed together — each one masked/reshaped the symptom of the next rather than the fix simply
 // not working, which is why this took four rounds of live diagnostics to fully unwind:
